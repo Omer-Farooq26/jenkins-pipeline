@@ -1,15 +1,16 @@
-// Build & run a tiny image using the HOST's Docker (no DinD).
+// Use HOST Docker (no DinD). Simple end-to-end prove.
 pipeline {
-  agent any   // run directly on the Jenkins node (EC2)
-
+  agent any
   options { timestamps() }
 
   stages {
     stage('Check Docker') {
       steps {
+        sh 'whoami'
+        sh 'id'
         sh 'docker --version'
-        sh 'id'                  // helpful to confirm user/groups
         sh 'ls -l /var/run/docker.sock'
+        sh 'docker ps'
       }
     }
 
@@ -34,7 +35,7 @@ pipeline {
   }
 
   post {
-    always { echo "Result: ${currentBuild.currentResult}" }
+    always { echo "Build finished: ${currentBuild.currentResult}" }
   }
 }
 
