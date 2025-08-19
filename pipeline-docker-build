@@ -1,0 +1,23 @@
+pipeline {
+  agent {
+    docker { image 'docker:24.0' args '-v /var/run/docker.sock:/var/run/docker.sock' }
+  }
+  stages {
+    stage('Check Docker') {
+      steps {
+        sh 'docker --version'
+      }
+    }
+    stage('Build Image') {
+      steps {
+        sh 'echo "FROM alpine:latest\nCMD echo Hello from Docker!" > Dockerfile'
+        sh 'docker build -t my-test-image .'
+      }
+    }
+    stage('Run Container') {
+      steps {
+        sh 'docker run --rm my-test-image'
+      }
+    }
+  }
+}
