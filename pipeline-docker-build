@@ -1,23 +1,40 @@
+// Build & run a tiny image using the HOST's Docker (no DinD).
 pipeline {
-  agent {
-    docker { image 'docker:24.0' args '-v /var/run/docker.sock:/var/run/docker.sock' }
-  }
+  agent any   // run directly on the Jenkins node (EC2)
+
+  options { timestamps() }
+
   stages {
     stage('Check Docker') {
       steps {
         sh 'docker --version'
+        sh 'id'                  // helpful to confirm user/groups
+        sh 'ls -l /var/run/docker.sock'
       }
     }
+
     stage('Build Image') {
       steps {
-        sh 'echo "FROM alpine:latest\nCMD echo Hello from Docker!" > Dockerfile'
-        sh 'docker build -t my-test-image .'
+        sh '''
+          cat > Dockerfile <<'EOF'
+          FROM alpine:3.19
+          CMD echo "Hello from Docker!"
+          EOF
+
+          docker build -t my-test-image .
+        '''
       }
     }
+
     stage('Run Container') {
       steps {
         sh 'docker run --rm my-test-image'
       }
     }
   }
+
+  post {
+    always { echo "Result: ${currentBuild.currentResult}" }
+  }
 }
+
